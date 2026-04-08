@@ -1,5 +1,6 @@
 import Session from "../models/Session.js";
 import Attendance from "../models/Attendance.js";
+import { getIO } from "../socket/attendance.socket.js";
 
 export const markAttendance = async (req, res) => {
   try {
@@ -65,6 +66,23 @@ export const markAttendance = async (req, res) => {
       attendedAt: new Date(),
       status: "present",
     });
+
+    // Real-time update for faculty dashboard
+    try {
+      const io = getIO();
+      io.to(`faculty:${session.facultyId.toString()}`).emit("attendance:marked", {
+        sessionId: session._id.toString(),
+        studentId: req.user._id.toString(),
+        attendedAt: attendance.attendedAt,
+      });
+      io.to(`session:${session._id.toString()}`).emit("attendance:marked", {
+        sessionId: session._id.toString(),
+        studentId: req.user._id.toString(),
+        attendedAt: attendance.attendedAt,
+      });
+    } catch {
+      // Socket layer is optional; don't fail the API if it's unavailable.
+    }
 
     res.status(201).json({
       success: true,
