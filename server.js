@@ -3,7 +3,10 @@ import dotenv from 'dotenv';
 import { connectDB } from "./config/db.js";
 import cors from 'cors';
 import authRoutes from './routes/auth.routes.js';
-
+import studentRoutes from './routes/student.routes.js';
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
+ 
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -24,6 +27,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/student", studentRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
